@@ -1,5 +1,6 @@
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import type { Bill } from '../types';
+import type { Bill, VoteTally } from '../types';
 import { getTally } from '../services/api';
 
 function statusBadgeClass(status: Bill['status']): string {
@@ -14,7 +15,12 @@ function statusBadgeClass(status: Bill['status']): string {
 }
 
 export default function BillCard({ bill }: { bill: Bill }) {
-  const tally = getTally(bill.id);
+  const [tally, setTally] = useState<VoteTally>({ billId: bill.id, yea: 0, nay: 0, abstain: 0, total: 0 });
+
+  useEffect(() => {
+    getTally(bill.id).then(setTally);
+  }, [bill.id]);
+
   const totalVotes = tally.total;
   const yeaPct = totalVotes > 0 ? Math.round((tally.yea / totalVotes) * 100) : 0;
   const nayPct = totalVotes > 0 ? Math.round((tally.nay / totalVotes) * 100) : 0;

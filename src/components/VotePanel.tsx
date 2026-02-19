@@ -11,27 +11,42 @@ export default function VotePanel({ bill }: { bill: Bill }) {
   const [selectedChoice, setSelectedChoice] = useState<VoteChoice | null>(null);
   const [showReceipt, setShowReceipt] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     if (!user) return;
-    const alreadyVoted = hasUserVoted(user.id, bill.id);
-    setVoted(alreadyVoted);
-    if (alreadyVoted) {
-      const receiptId = getUserReceipt(user.id, bill.id);
-      if (receiptId) {
-        const voteData = verifyVote(receiptId);
-        if (voteData) setReceipt(voteData);
+    let cancelled = false;
+
+    async function checkVoteStatus() {
+      const alreadyVoted = await hasUserVoted(user!.id, bill.id);
+      if (cancelled) return;
+      setVoted(alreadyVoted);
+      if (alreadyVoted) {
+        const receiptId = await getUserReceipt(user!.id, bill.id);
+        if (cancelled) return;
+        if (receiptId) {
+          const voteData = await verifyVote(receiptId);
+          if (!cancelled && voteData) setReceipt(voteData);
+        }
       }
     }
+
+    checkVoteStatus();
+    return () => { cancelled = true; };
   }, [user, bill.id]);
 
-  function handleVote() {
-    if (!user || !selectedChoice) return;
-    const result = castVote(bill.id, user.id, selectedChoice);
-    if (result) {
-      setReceipt(result);
-      setVoted(true);
-      setShowReceipt(true);
+  async function handleVote() {
+    if (!user || !selectedChoice || submitting) return;
+    setSubmitting(true);
+    try {
+      const result = await castVote(bill.id, user.id, selectedChoice);
+      if (result) {
+        setReceipt(result);
+        setVoted(true);
+        setShowReceipt(true);
+      }
+    } finally {
+      setSubmitting(false);
     }
   }
 
@@ -108,10 +123,10 @@ export default function VotePanel({ bill }: { bill: Bill }) {
 
               <button
                 onClick={handleVote}
-                disabled={!selectedChoice}
+                disabled={!selectedChoice || submitting}
                 className="btn-primary w-full py-3 text-base"
               >
-                Submit Vote
+                {submitting ? 'Submitting...' : 'Submit Vote'}
               </button>
             </div>
 

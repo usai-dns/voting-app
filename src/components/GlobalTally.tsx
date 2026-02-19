@@ -10,13 +10,14 @@ interface GlobalTallyProps {
 export default function GlobalTally({ billId, compact = false }: GlobalTallyProps) {
   const [tally, setTally] = useState<VoteTally>({ billId, yea: 0, nay: 0, abstain: 0, total: 0 });
 
-  const refresh = useCallback(() => {
-    setTally(getTally(billId));
+  const refresh = useCallback(async () => {
+    const data = await getTally(billId);
+    setTally(data);
   }, [billId]);
 
   useEffect(() => {
     refresh();
-    const interval = setInterval(refresh, 2000);
+    const interval = setInterval(refresh, 5000);
     return () => clearInterval(interval);
   }, [refresh]);
 

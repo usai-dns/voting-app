@@ -8,21 +8,27 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [displayName, setDisplayName] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError('');
+    setLoading(true);
 
-    if (isRegister) {
-      if (!displayName.trim()) {
-        setError('Display name is required');
-        return;
+    try {
+      if (isRegister) {
+        if (!displayName.trim()) {
+          setError('Display name is required');
+          return;
+        }
+        const ok = await register(username.trim(), password, displayName.trim());
+        if (!ok) setError('Username already taken');
+      } else {
+        const ok = await login(username.trim(), password);
+        if (!ok) setError('Invalid username or password');
       }
-      const ok = register(username.trim(), password, displayName.trim());
-      if (!ok) setError('Username already taken');
-    } else {
-      const ok = login(username.trim(), password);
-      if (!ok) setError('Invalid username or password');
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -95,8 +101,8 @@ export default function LoginPage() {
               <p className="text-sm text-rose-600 bg-rose-50 rounded-lg px-3 py-2">{error}</p>
             )}
 
-            <button type="submit" className="btn-primary w-full">
-              {isRegister ? 'Create Account' : 'Sign In'}
+            <button type="submit" className="btn-primary w-full" disabled={loading}>
+              {loading ? 'Please wait...' : isRegister ? 'Create Account' : 'Sign In'}
             </button>
           </form>
 

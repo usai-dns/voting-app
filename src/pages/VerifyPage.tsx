@@ -7,14 +7,20 @@ export default function VerifyPage() {
   const [receiptInput, setReceiptInput] = useState('');
   const [result, setResult] = useState<VoteReceipt | null>(null);
   const [searched, setSearched] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  function handleVerify(e: React.FormEvent) {
+  async function handleVerify(e: React.FormEvent) {
     e.preventDefault();
     const trimmed = receiptInput.trim();
     if (!trimmed) return;
-    const vote = verifyVote(trimmed);
-    setResult(vote);
-    setSearched(true);
+    setLoading(true);
+    try {
+      const vote = await verifyVote(trimmed);
+      setResult(vote);
+      setSearched(true);
+    } finally {
+      setLoading(false);
+    }
   }
 
   const bill = result ? bills.find(b => b.id === result.billId) : null;
@@ -44,8 +50,8 @@ export default function VerifyPage() {
               autoFocus
             />
           </div>
-          <button type="submit" className="btn-primary w-full" disabled={!receiptInput.trim()}>
-            Verify Vote
+          <button type="submit" className="btn-primary w-full" disabled={!receiptInput.trim() || loading}>
+            {loading ? 'Verifying...' : 'Verify Vote'}
           </button>
         </form>
       </div>

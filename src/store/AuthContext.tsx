@@ -4,8 +4,8 @@ import * as api from '../services/api';
 
 interface AuthContextType {
   user: User | null;
-  login: (username: string, password: string) => boolean;
-  register: (username: string, password: string, displayName: string) => boolean;
+  login: (username: string, password: string) => Promise<boolean>;
+  register: (username: string, password: string, displayName: string) => Promise<boolean>;
   logout: () => void;
 }
 
@@ -29,8 +29,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [user]);
 
-  const login = useCallback((username: string, password: string): boolean => {
-    const result = api.login(username, password);
+  const login = useCallback(async (username: string, password: string): Promise<boolean> => {
+    const result = await api.login(username, password);
     if (result) {
       setUser(result);
       return true;
@@ -38,8 +38,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return false;
   }, []);
 
-  const register = useCallback((username: string, password: string, displayName: string): boolean => {
-    const result = api.register(username, password, displayName);
+  const register = useCallback(async (username: string, password: string, displayName: string): Promise<boolean> => {
+    const result = await api.register(username, password, displayName);
     if (result) {
       setUser(result);
       return true;

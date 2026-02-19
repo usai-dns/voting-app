@@ -15,35 +15,36 @@ export default function CommentThread({ billId, sectionId }: CommentThreadProps)
   const [replyTo, setReplyTo] = useState<string | null>(null);
   const [replyText, setReplyText] = useState('');
 
-  const loadComments = useCallback(() => {
+  const loadComments = useCallback(async () => {
     if (!user) return;
-    setComments(getCommentsWithReactions(billId, user.id, sectionId));
+    const data = await getCommentsWithReactions(billId, user.id, sectionId);
+    setComments(data);
   }, [billId, sectionId, user]);
 
   useEffect(() => {
     loadComments();
   }, [loadComments]);
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!user || !newComment.trim()) return;
-    addComment(billId, sectionId, user.id, user.displayName, newComment.trim());
+    await addComment(billId, sectionId, user.id, user.displayName, newComment.trim());
     setNewComment('');
-    loadComments();
+    await loadComments();
   }
 
-  function handleReply(parentId: string) {
+  async function handleReply(parentId: string) {
     if (!user || !replyText.trim()) return;
-    addComment(billId, sectionId, user.id, user.displayName, replyText.trim(), parentId);
+    await addComment(billId, sectionId, user.id, user.displayName, replyText.trim(), parentId);
     setReplyText('');
     setReplyTo(null);
-    loadComments();
+    await loadComments();
   }
 
-  function handleReaction(commentId: string, value: 1 | -1) {
+  async function handleReaction(commentId: string, value: 1 | -1) {
     if (!user) return;
-    reactToComment(billId, commentId, user.id, value);
-    loadComments();
+    await reactToComment(billId, commentId, user.id, value);
+    await loadComments();
   }
 
   // Build tree
