@@ -1,0 +1,9 @@
+name = "shadow-legislature"
+compatibility_date = "2024-09-23"
+pages_build_output_dir = "./dist"
+
+# Future: D1 database binding for production backend
+# [[d1_databases]]
+# binding = "DB"
+# database_name = "shadow-legislature-db"
+# database_id = "<your-d1-database-id>"
